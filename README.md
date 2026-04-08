@@ -26,81 +26,32 @@ pip install pillow numpy pandas pyautogui pynput
 + Генерация изображений + labels
 
 
+## main.py
+Генерация с четырьмя независимыми полями
 
-## main_1_field.py
-Генерация изображений с одним текстовым полем
+<img width="707" height="432" alt="image" src="https://github.com/user-attachments/assets/8968efea-6473-486d-aa99-46d9c5ff5dfe" />
+<img width="707" height="432" alt="image" src="https://github.com/user-attachments/assets/fb5e6fd5-45af-4fa8-b369-ce250981aeb0" />
 
 
-![1](https://github.com/user-attachments/assets/cbe801e0-0655-4ae1-8c21-ac1b9da49ade)
-![2](https://github.com/user-attachments/assets/cab2cb2c-7b86-4ced-acf7-5c48eb6d3302)
 ## Особенности:
-Один bounding box
-+ Jitter (случайное смещение текста)
-+ Случайный поворот
-+ Автоматический ресайз (высота = 100px)
-+ Поддержка .txt и .csv
-## Формат данных:
-
-TXT:
-```bash
-A123BC
-B456DE
-```
-CSV:
-```bash
-A123BC
-B456DE
-```
-## Аугментации
-В генерации используются:
-+ Поворот (ANGLE_RANGE)
-+ Смещение (jitter)
-
-## Выходные данные
-
-После генерации создаётся папка:
-```bash
-output/run_YYYYMMDD_HHMMSS/
-```
-Внутри:
-+ .jpg изображения
-+ .txt файл с разметкой
-Формат labels:
-```bash
-image_name.jpg,VALUE,99
-```
-# ВАЖНО:
-+ Если ты генерируешь номера через main_1_field.py и на изображении background уже есть stacked номера, например W и A, то нужно в функции generate() руками прописать prefix1, prefix2 = "W", "A",
-  чтобы на выходе в файле labels.txt были такие значения: 
-```bash
-image_name.jpg,<W/A><VALUE>,99
-```
-
-
-## main_3_fields.py
-Генерация с тремя независимыми полями
-
-
-![3](https://github.com/user-attachments/assets/91b1df0d-33d6-42a2-9474-5c0d4abd4bab)
-<img width="1104" height="605" alt="image" src="https://github.com/user-attachments/assets/8b86b6cc-de88-47d2-a3f3-45464b10f3ea" />
-## Особенности:
-+ 3 поля (Field 1, Field 2, Field 3)
++ 4 поля (Field 1, Field 2, Field 3, Field 4)
++ Возможность выбрать шрифт и цвет для каждого из Field
++ Рендер шрифтов в реальном времени
 + Переключение активного поля
-+ Аффинные искажения (shear, zoom)
-+ Добавление шума
-+ Более реалистичная аугментация
++ Добавление шума (Noise), поворота (Rotation) и случайного смещения шрифта (Jitter)
+  
 ## Формат данных:
 
 TXT:
 ```bash
-A,B,777
-AB,CD,123
+A,B,777,XY
+AB,CD,123,XX
 ```
 CSV:
 ```bash
-Field 1,Field 2,Field 3
-A,B,777
-AB,CD,123
+Field 1,Field 2,Field 3,Field 4
+A,B,777,XY
+AB,CD,123,XX
 ```
 
 ## 🧪 Аугментации
@@ -108,10 +59,7 @@ AB,CD,123
 + Поворот (ANGLE_RANGE)
 + Смещение (jitter)
 + Noise (шум)
-+ Аффинные трансформации:
-  - shear
-  - масштабирование
-+ Downscale до 100px (для реалистичности)
++ Downscale до 100px
 
 
 ## Выходные данные
@@ -123,33 +71,27 @@ output/run_YYYYMMDD_HHMMSS/
 Внутри:
 + .jpg изображения
 + .txt файл с разметкой
-Формат labels (VALUE = Field 1 + Field 2 + Field 3):
+Формат labels.txt (VALUE = Field 1_Field 2_Field 3_Field 4):
 ```bash
-image_name.jpg,VALUE,99
+image_name.jpg,<PREFIX><VALUE>,99
 ```
 
 # ✨Как это работает:
 ```bash
-python main_1_field.py
-```
-+ Жмёшь на кнопку 👉▶️ [Load BG], подгружаешь background
-+ Двигаешь мышкой 🖱️ **ПОЛЕ Field 1**, где хочешь, чтобы был текст
-+ Жмёшь на кнопку 👉▶️ [Load Font] и подгружаешь твои любимые **ШРИФТЫ**
-+ Жмёшь на кнопку 👉▶️ [Font Color]/[Pipette] и выбираешь цвет **ШРИФТОВ**
-+ Жмёшь на кнопку 👉▶️ [Save JSON] или [Load JSON] чтобы сохранить/загрузить конфигурацию **ПОЛЯ Field 1**
-+ Выстави ползунок 👉▶️ [Jitter] для рандомного блуждания текста на значение ползунка в пикселях
-+ Жмёшь на кнопку 👉▶️ [Load Data] и загружаешь данные в формате .txt или .csv
-+ Жмёшь на кнопку 👉▶️ [GENERATE] и новые сгенерированные изображения записываются в ./output/run_YYYYMMDD_HHMMSS/
-
-```bash
-python main_3_fields.py
+python main.py
 ```
 + Жмёшь на кнопку 👉▶️ [Load BG], подгружаешь background
 + Жмёшь на кнопку 👉▶️ [Field 1] и двигаешь мышкой 🖱️ **ПОЛЕ Field 1**, где хочешь, чтобы был текст так для всех **Field**
-+ Жмёшь на кнопку 👉▶️ [Load Font] и подгружаешь твои любимые **ШРИФТЫ**
++ Жмёшь на кнопку 👉▶️ [Load Font] и подгружаешь твои любимые **ШРИФТЫ**,
+  для каждого **Field** отдельно (Выбрал [Field 1] - выставил шрифт, Выбрал [Field 2] - выставил шрифт...)
 + Жмёшь на кнопку 👉▶️ [Font Color]/[Pipette] и выбираешь цвет **ШРИФТОВ**,
   для каждого **Field** отдельно (Выбрал [Field 1] - выставил цвет, Выбрал [Field 2] - выставил цвет...)
-+ Жмёшь на кнопку 👉▶️ [Save JSON] или [Load JSON] чтобы сохранить/загрузить конфигурацию трёх полей **Field 1**, **Field 2**, **Field 3**
-+ Жмёшь на кнопку 👉▶️ [Load TXT] и загружаешь данные в формате .txt
-+ Жмёшь на кнопку 👉▶️ [Load CSV] и загружаешь данные в формате .csv
++ Жмёшь на кнопку 👉▶️ [Save JSON] или [Load JSON] чтобы сохранить/загрузить конфигурацию трёх полей **Field 1**, **Field 2**, **Field 3**,  **Field 4**
++ Жмёшь на кнопку 👉▶️ [Load Data] и загружаешь данные в формате .txt или .csv
++ Жмёшь на checkbox 👉▶️ [Rotation] и 👉▶️ [Noise]
++ Выстави ползунок 👉▶️ [Jitter] для рандомного блуждания текста на значение ползунка в пикселях
++ Пишешь в поле 🖊️[Prefix] любые дополнительные строки, чтобы добавить их в labels.txt
+```bash
+image_name.jpg,<PREFIX><VALUE>,99
+```
 + Жмёшь на кнопку 👉▶️ [GENERATE] и новые сгенерированные изображения записываются в ./output/run_YYYYMMDD_HHMMSS/
