@@ -132,12 +132,6 @@ class App:
         tk.Button(ctrl_frame, text="GENERATE", command=self.generate, bg="green", fg="white").pack(side="right",
                                                                                                    padx=10)
 
-        # self.field = {
-        #     "name": "Field 1",
-        #     "box": [50, 50, 250, 150],
-        #     "font_color": "#000000"
-        # }
-
         self.bg_image = None
         self.tk_img = None
         self.font_path = DEFAULT_FONT_PATH
@@ -153,24 +147,14 @@ class App:
             self.canvas.config(width=self.bg_image.width, height=self.bg_image.height)
             self.show_image()
 
-    # def show_image(self):
-    #     if self.bg_image is None:
-    #         return
-    #     display_img = self.bg_image.copy()
-    #     draw = ImageDraw.Draw(display_img)
-    #
-    #     box = self.field["box"]
-    #     draw.rectangle(box, outline="red", width=2)
-    #     draw.text((box[0], box[1] - 15), "Field 1", fill="red")
-    #
-    #     self.tk_img = ImageTk.PhotoImage(display_img)
-    #     self.canvas.create_image(0, 0, anchor="nw", image=self.tk_img)
-
     def show_image(self):
         if self.bg_image is None:
             return
         display_img = self.bg_image.copy()
-        draw = ImageDraw.Draw(display_img)
+
+        # Берем данные из первого ряда sample_data для превью,
+        # или используем заглушку "TEXT", если данных нет
+        sample_text = self.sample_data[0] if self.sample_data else {}
 
         curr_idx = self.current_field_idx.get()
         for i, field in enumerate(self.fields):
@@ -178,8 +162,23 @@ class App:
             is_active = (i == curr_idx)
             color = "red" if is_active else "blue"
             width = 3 if is_active else 1
+
+            # Рисуем рамку
+            draw = ImageDraw.Draw(display_img)
             draw.rectangle(box, outline=color, width=width)
             draw.text((box[0], box[1] - 15), field["name"], fill=color)
+
+            # Рендерим сам шрифт внутри рамки
+            text_to_show = str(sample_text.get(f"Field {i + 1}", "SAMPLE"))
+            if text_to_show:
+                draw_text_center(
+                    display_img,
+                    text_to_show,
+                    box,
+                    self.font_path,
+                    300,  # Макс размер шрифта
+                    field["font_color"]
+                )
 
         self.tk_img = ImageTk.PhotoImage(display_img)
         self.canvas.create_image(0, 0, anchor="nw", image=self.tk_img)
@@ -188,12 +187,6 @@ class App:
         path = filedialog.askopenfilename(filetypes=[("TTF files", "*.ttf")])
         if path:
             self.font_path = path
-
-    # def change_color(self):
-    #     color_code = colorchooser.askcolor(title="Choose font color")
-    #     if color_code[1]:
-    #         self.field["font_color"] = color_code[1]
-    #         self.show_image()
 
     def change_color(self):
         color_code = colorchooser.askcolor(title="Choose font color")
@@ -208,11 +201,11 @@ class App:
         # Функция, которая сработает ПРИ КЛИКЕ
         def on_click_logic(x, y, button, pressed):
             if pressed and button == mouse.Button.left:
-                # 1. Берем цвет пикселя
+                # Берем цвет пикселя
                 rgb = pyautogui.screenshot().getpixel((x, y))
                 hex_color = '#{:02x}{:02x}{:02x}'.format(*rgb)
 
-                # 2. Передаем обновление цвета в основной поток Tkinter
+                # Передаем обновление цвета в основной поток Tkinter
                 # Используем .after(0, ...), чтобы избежать конфликтов потоков
                 self.root.after(0, lambda: self.apply_pipette_result(hex_color))
 
@@ -237,12 +230,6 @@ class App:
     def on_click(self, event):
         self.start_x = event.x
         self.start_y = event.y
-
-    # def on_drag(self, event):
-    #     if self.bg_image is None: return
-    #     x1, y1, x2, y2 = self.start_x, self.start_y, event.x, event.y
-    #     self.field["box"] = [min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)]
-    #     self.show_image()
 
     def on_drag(self, event):
         if self.bg_image is None: return
@@ -275,39 +262,6 @@ class App:
             self.use_rotation.set(data.get("use_rotation", False))
             self.use_noise.set(data.get("use_noise", False))
             self.show_image()
-
-    # def save_json(self):
-    #     path = filedialog.asksaveasfilename(defaultextension=".json")
-    #     if path:
-    #         data = {"field": self.field, "font_path": self.font_path, "jitter": self.jitter_var.get()}
-    #         with open(path, "w") as f:
-    #             json.dump(data, f, indent=4)
-
-    # def load_json(self):
-    #     path = filedialog.askopenfilename()
-    #     if path:
-    #         with open(path, "r") as f:
-    #             data = json.load(f)
-    #         self.field = data["field"]
-    #         self.font_path = data.get("font_path", DEFAULT_FONT_PATH)
-    #         self.jitter_var.set(data.get("jitter", 5))
-    #         self.show_image()
-
-    # def load_data(self):
-    #     path = filedialog.askopenfilename(filetypes=[("Data files", "*.csv *.txt")])
-    #     if not path:
-    #         return
-    #     try:
-    #         if path.endswith('.csv'):
-    #             df = pd.read_csv(path)
-    #             # self.sample_data = [{"Field 1": str(val)} for val in df.iloc[:, 0].tolist()]
-    #             self.sample_data = df.to_dict('records')
-    #         else:
-    #             with open(path, "r", encoding="utf-8") as f:
-    #                 self.sample_data = [{"Field 1": line.strip()} for line in f if line.strip()]
-    #         messagebox.showinfo("Loaded", f"Loaded {len(self.sample_data)} rows")
-    #     except Exception as e:
-    #         messagebox.showerror("Error", f"Failed to load: {e}")
 
     def load_data(self):
         path = filedialog.askopenfilename(filetypes=[("Data files", "*.csv *.txt")])
@@ -350,47 +304,6 @@ class App:
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load: {e}")
-
-    # def generate(self):
-    #     if self.bg_image is None:
-    #         messagebox.showwarning("Warning", "Load background first!")
-    #         return
-    #
-    #     prefix = self.prefix_var.get()
-    #     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    #     run_dir = OUTPUT_DIR / f"run_{timestamp}"
-    #     run_dir.mkdir(parents=True)
-    #
-    #     jitter_val = self.jitter_var.get()  # Получаем значение с ползунка
-    #     report_lines = []
-    #
-    #     for sample in self.sample_data:
-    #         val = str(sample.get("Field 1", ""))
-    #         img = self.bg_image.copy()
-    #
-    #         # Вычисляем рандомный офсет для текущей итерации
-    #         off_x = random.randint(-jitter_val, jitter_val)
-    #         off_y = random.randint(-jitter_val, jitter_val)
-    #
-    #         b = self.field["box"]
-    #         # Применяем смещение к координатам
-    #         j_box = [b[0] + off_x, b[1] + off_y, b[2] + off_x, b[3] + off_y]
-    #         draw_text_center(img, val, j_box, self.font_path, 300, self.field["font_color"])
-    #         img = rotate_image(img, random.uniform(*ANGLE_RANGE))
-    #
-    #         # Ресайз до 100px по высоте
-    #         target_h = 100
-    #         target_w = int(target_h * (img.width / img.height))
-    #         img = img.resize((target_w, target_h), resample=Image.Resampling.LANCZOS)
-    #
-    #         image_filename = f"img_{val}_{uuid.uuid4()}.jpg"
-    #         img.save(run_dir / image_filename, quality=95)
-    #         report_lines.append(f"{image_filename},{prefix}{val},99")
-    #
-    #     with open(run_dir / "labels.txt", "w", encoding="utf-8") as f:
-    #         f.write("\n".join(report_lines))
-    #
-    #     messagebox.showinfo("Done", f"Generated {len(self.sample_data)} images in {run_dir}")
 
     def generate(self):
         if self.bg_image is None:
@@ -439,7 +352,7 @@ class App:
             target_w = int(target_h * (img.width / img.height))
             img = img.resize((target_w, target_h), resample=Image.Resampling.LANCZOS)
 
-            combined_val = "_".join(full_label_parts)
+            combined_val = "".join(full_label_parts)
             image_filename = f"img_{uuid.uuid4()}.jpg"
             img.save(run_dir / image_filename, quality=95)
             report_lines.append(f"{image_filename},{prefix}{combined_val},99")
